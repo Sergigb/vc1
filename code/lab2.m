@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%       COMPUTER VISION LAB 2017       %%%         LAB 2         %%%
+%%%       xxxxxxxxxxxxxxxxxxxxxxxx       %%%         LAB x         %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  Students Name and NIU:                                        %%%
 %%%  Surename(s), Name (NIU)                                       %%%
@@ -9,11 +9,11 @@
 %%%  Matlab / Octave:                                              %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Deliverables until We. Mar. 30th. 23:00h                       %%%
-%%% CERBERO							                               %%%
-%%% + lab2.m                                                       %%% 
+%%% xxxxx							                               %%%
+%%% + xxxxxxx                                                      %%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Hello! Welcome to the computer vision LAB 2. 
+%% Hello! Welcome to the x. 
 
 % TODO. Please, copy the images folder in the parent directory to make the 
 % code work properly.
@@ -222,6 +222,52 @@ title('normalxcorrelated');
 % help ifft2
 
 
+% Fourier domain correlations:
+fft_reference1 = fft2(reference1);                          %domain correlation image 1
+fft_red1 = fft_reference1.*conj(fft2(red_cut1));            %domain correlation red
+domain_correlation_red1 = ifft2(fft_red1);
+
+fft_blue1 = fft_reference1.*conj(fft2(blue_cut1));          %domain correlation blue
+domain_correlation_blue1 = ifft2(fft_blue1);
+
+fft_reference2 = fft2(reference2);                          %domain correlation image 1
+fft_red2 = fft_reference2.*conj(fft2(red_cut2));            %domain correlation red
+domain_correlation_red2 = ifft2(fft_red2);
+
+fft_green2 = fft_reference2.*conj(fft2(green_cut2));        %domain correlation green
+domain_correlation_green2 = ifft2(fft_green2);
+
+%Coordinates where the correlation is maximum:
+[value1_red_dom, location1_red_dom] = max(domain_correlation_red1(:));             %shifts image 1
+[row_green_red1_dom,col_green_red1_dom] = ind2sub(size(domain_correlation_red1),location1_red_dom); 
+
+[value1_blue_dom, location1_blue_dom] = max(domain_correlation_blue1(:));
+[row_green_blue1_dom,col_green_blue1_dom] = ind2sub(size(domain_correlation_blue1),location1_blue_dom); 
+
+[value2_red_dom, location2_red_dom] = max(domain_correlation_red2(:));             %shifts image 2
+[row_blue_red2_dom,col_blue_red2_dom] = ind2sub(size(domain_correlation_red2),location2_red_dom); 
+
+[value2_green_dom, location2_green_dom] = max(domain_correlation_green2(:));
+[row_blue_green2_dom,col_blue_green2_dom] = ind2sub(size(domain_correlation_green2),location2_green_dom); 
+
+%Image shifts:
+[h_do,w_do] = size(domain_correlation_red1);
+[h_do2,w_do2] = size(domain_correlation_red2);
+
+red_shifted_1_dom = circshift(red_channel1, [row_green_red1_dom, col_green_red1_dom]);   %circshift image 1
+blue_shifted_1_dom = circshift(blue_channel1, [-(h_do - row_green_blue1_dom),-(w_do - col_green_blue1_dom)]);
+
+red_shifted_2_dom = circshift(red_channel2, [-(h_do2 - row_blue_red2_dom), -(w_do2 - col_blue_red2_dom)]);   %circshift image 2
+green_shifted_2_dom = circshift(green_channel2, [-(h_do2 - row_blue_green2_dom), -(w_do2 - col_blue_green2_dom)]);
+
+%concatenation
+fourier_correlated1 = cat(3, red_shifted_1_dom, green_channel1, blue_shifted_1_dom);
+fourier_correlated2 = cat(3, blue_channel2, green_shifted_2_dom, red_shifted_2_dom);
+
+figure(4),
+subplot(1,2,1), imshow(fourier_correlated1);
+subplot(1,2,2), imshow(fourier_correlated2);
+title('Fourier Domain');
 
 % Fourier phase correlation (+2) -----------------------------------------
 % help fft2
