@@ -114,6 +114,8 @@ reference2=double(blue_cut2);
 % TODO. Compute the spatial correlation of the reference channel with other
 % channels for the two images.
 
+Green_Red1 = conv2((flipud(double(red_channel1))),(reference1), 'same');
+Green_Blue1 = conv2((flipud(double(blue_channel1))), (reference1), 'same');
 
 %Blue_Red2 = etc
 %Blue_Green2= etc
@@ -121,39 +123,99 @@ reference2=double(blue_cut2);
 % TODO. Find the coordinates of the correlation correlation 
 % help find
 
+[value1_red, location1_red] = max(Green_Red1(:));
+[R1_red,C1_red] = ind2sub(size(Green_Red1),location1_red); 
+
+[value1_blue, location1_blue] = max(Green_Blue1(:));
+[R1_blue,C1_blue] = ind2sub(size(Green_Blue1),location1_blue);
+
+
+[h_temp, w_temp] = size(Green_Red1);
+h_temp = int32(h_temp/4);
+w_temp = int32(w_temp/4);
+
+
+%Green_Red1(h_temp ,w_temp) = 0.6;
+%Green_Blue1(h_temp ,w_temp) = 0.6;
+% 
+% Green_Red1(R1_red,C1_red) = 0.6;
+% Green_Blue1(R1_blue,C1_blue) = 0.6;
+% 
+% figure(14),
+% imshow((Green_Blue1), [])
+% title('blue');
+% figure(15),
+% imshow((Green_Red1), [])
+% title('red');
+
+% mc_red_greem_2 = 
+% mc_red_blue_2 = 
 
 % TODO. Shifting the position in the correlated channel
 % help circshift
 
-% green_shifted_2 = 
-% blue_shifted_2 = 
+red_shifted_1 = circshift(red_channel1, [-1*R1_red-h_temp, -1*C1_red-w_temp]);
+blue_shifted_1 = circshift(blue_channel1, [R1_blue+h_temp, -1*C1_blue+w_temp]);
 
 % TODO. Mix che shifted channels and the reference channel in a single 
 % correlated image.
 % help cat
+ spatial_correlated1 = cat(3, red_shifted_1, green_channel1, blue_shifted_1);
+% spatial_correlated2 = 
 
 % TODO. Show the results (just uncomment)
-% figure(3),
-% subplot(1,1,1), imshow(spatial_correlated1);
-% subplot(1,2,2), imshow(spatial_correlated2);
-% title('spatial\_correlated');
+figure(3),
+subplot(1,1,1), imshow(spatial_correlated1);
+%subplot(1,2,2), imshow(spatial_correlated2);
+title('spatial\_correlated');
 
 % Normalized cross correlation (+1.5) -------------------------------------
 % help normxcorr2
 
 % TODO. Correlate the reference channel with one of the two other.
+Green_Red1_cross = normxcorr2(reference1, double((red_channel1)));
+Green_Blue1_cross = normxcorr2(reference1, double((blue_channel1)));
+
+Blue_Red2_cross = normxcorr2(reference2, double((red_channel2)));
+Blue_Green2_cross = normxcorr2(reference2, double((green_channel2)));
 
 % TODO. Find the coordinates of the max of R (the correlation maximum)
 % help find
+[value1_red_cross, location1_red_cross] = max(Green_Red1_cross(:));             %image 1
+[row_green_red1,col_green_red1] = ind2sub(size(Green_Red1_cross),location1_red_cross); 
+
+[value1_blue_cross, location1_blue_cross] = max(Green_Blue1_cross(:));
+[row_green_blue1,col_green_blue1] = ind2sub(size(Green_Blue1_cross),location1_blue_cross); 
+
+
+[value2_red_cross, location2_red_cross] = max(Blue_Red2_cross(:));             %image 2
+[row_blue_red2,col_blue_red2] = ind2sub(size(Blue_Red2_cross),location2_red_cross); 
+
+[value2_green_cross, location2_green_cross] = max(Blue_Green2_cross(:));
+[row_blue_green2,col_blue_green2] = ind2sub(size(Blue_Green2_cross),location2_green_cross); 
 
 % TODO. Shifting the position in the correlated channel
 % help circshift
+[h,w] = size(Green_Red1_cross);
+[h2,w2] = size(Blue_Red2_cross);
+
+red_shifted_1_cross = circshift(red_channel1, int32([h/2 - row_green_red1, w/2 - col_green_red1]));
+blue_shifted_1_cross = circshift(blue_channel1, int32([h/2 - row_green_blue1, w/2 - col_green_blue1]));
+
+red_shifted_2_cross = circshift(red_channel2, int32([h2/2 - row_blue_red2, w2/2 - col_blue_red2]));
+green_shifted_2_cross = circshift(green_channel2, int32([h2/2 - row_blue_green2, w2/2 - col_blue_green2]));
 
 % TODO. Mix che shifted channels and the reference channel in a single 
 % correlated image.
 % help cat
+spatial_cross_correlated1 = cat(3, red_shifted_1_cross, green_channel1, blue_shifted_1_cross);
+spatial_cross_correlated2 = cat(3, blue_channel2, green_shifted_2_cross, red_shifted_2_cross ); %los canales rojo y azul estan intercambiados
 
 % % TODO. Show the results (just uncomment)
+figure(5),
+subplot(1,2,1), imshow(spatial_cross_correlated1);
+subplot(1,2,2), imshow(spatial_cross_correlated2);
+title('normalxcorrelated');
 
 % Fourier domain correlation (+2) ----------------------------------------
 % help fft2
