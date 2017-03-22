@@ -273,6 +273,53 @@ title('Fourier Domain');
 % help fft2
 % help ifft2
 
+% phase correlation in fourier domain:
+fft_reference1 = fft2(reference1);                          %phase correlation image 1
+cps_red1 = fft_reference1.*conj(fft2(red_cut1));            %phase correlation red channel
+phase_correlation_red1 = ifft2(cps_red1./abs(cps_red1));
+
+cps_blue1 = fft_reference1.*conj(fft2(blue_cut1));          %phase correlation blue channel
+phase_correlation_blue1 = ifft2(cps_blue1./abs(cps_blue1));
+
+fft_reference2 = fft2(reference2);                          %phase correlation image 2
+cps_red2 = fft_reference2.*conj(fft2(red_cut2));            %phase correlation red channel
+phase_correlation_red2 = ifft2(cps_red2./abs(cps_red2));
+
+cps_green2 = fft_reference2.*conj(fft2(green_cut2));        %phase correlation green channel
+phase_correlation_green2 = ifft2(cps_green2./abs(cps_green2));
+
+%Coordinates where the correlation is maximum:
+[value1_red_four, location1_red_four] = max(phase_correlation_red1(:));             %shifts image 1
+[row_green_red1_four,col_green_red1_four] = ind2sub(size(phase_correlation_red1),location1_red_four); 
+
+[value1_blue_four, location1_blue_four] = max(phase_correlation_blue1(:));
+[row_green_blue1_four,col_green_blue1_four] = ind2sub(size(phase_correlation_blue1),location1_blue_four); 
+
+[value2_red_four, location2_red_four] = max(phase_correlation_red2(:));             %shifts image 2
+[row_blue_red2_four,col_blue_red2_four] = ind2sub(size(phase_correlation_red2),location2_red_four); 
+
+[value2_green_four, location2_green_four] = max(phase_correlation_green2(:));
+[row_blue_green2_four,col_blue_green2_four] = ind2sub(size(phase_correlation_green2),location2_green_four); 
+
+%Image shifts:
+[h_ph,w_ph] = size(phase_correlation_red2);
+
+red_shifted_1_four = circshift(red_channel1, [row_green_red1_four, col_green_red1_four]);   %circshift image 1
+blue_shifted_1_four = circshift(blue_channel1, [-(h_ph - row_green_blue1_four),-(w_ph - col_green_blue1_four)]);
+
+[h_ph2,w_ph2] = size(phase_correlation_red2);
+red_shifted_2_four = circshift(red_channel2, [-(h_ph2 - row_blue_red2_four), -(w_ph2 - col_blue_red2_four)]);   %circshift image 2
+green_shifted_2_four = circshift(green_channel2, [-(h_ph2 - row_blue_green2_four), -(w_ph2 - col_blue_green2_four)]);
+
+%concatenation
+phase_correlated1 = (cat(3, red_shifted_1_four, green_channel1, blue_shifted_1_four));
+phase_correlated2 = (cat(3, blue_channel2, green_shifted_2_four, red_shifted_2_four));
+
+figure(6),
+subplot(1,2,1), imshow(phase_correlated1);
+subplot(1,2,2), imshow(phase_correlated2);
+title('Fourier Phase');
+
 
 
 %% Save the images ------------------------------------------------------
@@ -281,7 +328,21 @@ title('Fourier Domain');
 % name_mode.jpg where name is the previous image name and mode is the
 % correlation you have applied.
 
-% OPTIONAL 2 ------------------------------------------------------------
+if ~exist('../results', 'dir')
+  mkdir('../results');
+end
+
+imwrite(spatial_correlated1,'../results/space_correlation1.png');
+%imwrite(spatial_correlated2,'../results/space_correlation2.png');
+imwrite(spatial_cross_correlated1,'../results/spatial_cross_correlated1.png');
+imwrite(spatial_cross_correlated2,'../results/spatial_cross_correlated2.png');
+imwrite(fourier_correlated1,'../results/fourier_correlated1.png');
+imwrite(fourier_correlated2,'../results/fourier_correlated2.png');
+imwrite(phase_correlated1, '../results/phase_correlated1.png');
+imwrite(phase_correlated2, '../results/phase_correlated2.png');
+
+
+% OPTIONAL 1 ------------------------------------------------------------
 % Improve the crop
 
 % OPTIONAL 2 ------------------------------------------------------------
