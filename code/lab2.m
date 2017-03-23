@@ -105,8 +105,8 @@ blue_cut2 =  blue_channel2(rangef,rangec);
 % TODO. Select one channel as reference and correlate the other two using
 % Spatial Correlation.
 
-reference1=double(green_cut1);
-reference2=double(blue_cut2);
+reference1 = double(green_cut1);
+reference2 = double(blue_cut2);
 
 % TODO. Here you can do the magic trick explained on the slides to achive a 
 % good correlation
@@ -114,46 +114,49 @@ reference2=double(blue_cut2);
 % TODO. Compute the spatial correlation of the reference channel with other
 % channels for the two images.
 
-Green_Red1 = conv2(double((histeq(red_channel1))),flipud(histeq(reference1)), 'full');
-Green_Blue1 = conv2(double((histeq(blue_channel1))), flipud(histeq(reference1)), 'full');
+Green_Red1 = conv2((double(red_cut1-mean2(reference1))),flipud(reference1-mean2(reference1)), 'same');
+Green_Blue1 = conv2((double(blue_cut1-mean2(reference1))), flipud(reference1-mean2(reference1)), 'same');
 
-%Blue_Red2 = etc
-%Blue_Green2= etc
+Blue_Red2 = conv2((double((red_cut2-mean2(reference2)))),flipud(reference2-mean2(reference2)), 'same');
+Blue_Green2 = conv2((double((green_cut2-mean2(reference2)))), flipud(reference2-mean2(reference2)), 'same');
 
 % TODO. Find the coordinates of the correlation correlation 
 % help find
-
 [value1_red, location1_red] = max(Green_Red1(:));
 [R1_red,C1_red] = ind2sub(size(Green_Red1),location1_red); 
 
 [value1_blue, location1_blue] = max(Green_Blue1(:));
 [R1_blue,C1_blue] = ind2sub(size(Green_Blue1),location1_blue);
 
+[value2_red, location2_red] = max(Blue_Red2(:));
+[R2_red,C2_red] = ind2sub(size(Blue_Red2),location2_red); 
 
-Green_Blue1(R1_blue,C1_blue) = 1;
-Green_Red1(R1_red, C1_red) = 1;
+[value2_green, location2_green] = max(Blue_Green2(:));
+[R2_green,C2_green] = ind2sub(size(Blue_Green2),location2_green);
 
-[h_temp, w_temp] = size(Green_Red1);
-h_temp = int32(h_temp/4);
-w_temp = int32(w_temp/4);
+[h_temp2, w_temp2] = size(Blue_Red2);
+h_temp2 = int32(h_temp2/2);
+w_temp2 = int32(w_temp2/2);
 
 
 % TODO. Shifting the position in the correlated channel
 % help circshift
+red_shifted_1 = circshift(red_channel1, [h_temp2 - R1_red, w_temp2-C1_red]);
+blue_shifted_1 = circshift(blue_channel1, [h_temp2-R1_blue/2, w_temp2-C1_blue]);
 
-red_shifted_1 = circshift(red_channel1, [-R1_red-h_temp, -C1_red-w_temp]);
-blue_shifted_1 = circshift(blue_channel1, [R1_blue+h_temp, -C1_blue+w_temp]);
+red_shifted_2 = circshift(red_channel2, [h_temp2 - R2_red, w_temp2-C2_red]);
+green_shifted_2 = circshift(green_channel2, [h_temp2-R2_green, w_temp2-C2_green]);
 
 % TODO. Mix che shifted channels and the reference channel in a single 
 % correlated image.
 % help cat
- spatial_correlated1 = cat(3, red_shifted_1, green_channel1, blue_shifted_1);
-% spatial_correlated2 = 
+spatial_correlated1 = cat(3, red_shifted_1, green_channel1, blue_shifted_1);
+spatial_correlated2 = cat(3, blue_channel2, green_shifted_2, red_shifted_2);
 
 % TODO. Show the results (just uncomment)
 figure(3),
-subplot(1,1,1), imshow(spatial_correlated1);
-%subplot(1,2,2), imshow(spatial_correlated2);
+subplot(1,2,1), imshow(spatial_correlated1);
+subplot(1,2,2), imshow(spatial_correlated2);
 title('spatial\_correlated');
 
 % Normalized cross correlation (+1.5) -------------------------------------
