@@ -26,11 +26,11 @@ close all,
 clc,
 
 % Image names
-file_names = {'00149v.jpg', '00153v.jpg', '00194v.jpg', '00458v.jpg', 
+file_names = {'00149v.jpg', '00153v.jpg', '00194v.jpg', '00458v.jpg',... 
               '01167v.jpg', '00163v.jpg', '00398v.jpg', '00600v.jpg'};  
 
 % TODO. Load the first of the images to work with:
-im1 = imread(file_names{3});
+im1 = imread(file_names{2});
 
 % TODO. Load the second of the images to work with:
 im2 = imread(file_names{8});
@@ -113,7 +113,6 @@ reference2 = double(blue_cut2);
 
 % TODO. Compute the spatial correlation of the reference channel with other
 % channels for the two images.
-
 Green_Red1 = conv2((double(red_cut1-mean2(reference1))),flipud(reference1-mean2(reference1)), 'same');
 Green_Blue1 = conv2((double(blue_cut1-mean2(reference1))), flipud(reference1-mean2(reference1)), 'same');
 
@@ -322,14 +321,14 @@ if ~exist('../results', 'dir')
   mkdir('../results');
 end
 
-imwrite(spatial_correlated1,'../results/space_correlation1.png');
-%imwrite(spatial_correlated2,'../results/space_correlation2.png');
-imwrite(spatial_cross_correlated1,'../results/spatial_cross_correlated1.png');
-imwrite(spatial_cross_correlated2,'../results/spatial_cross_correlated2.png');
-imwrite(fourier_correlated1,'../results/fourier_correlated1.png');
-imwrite(fourier_correlated2,'../results/fourier_correlated2.png');
-imwrite(phase_correlated1, '../results/phase_correlated1.png');
-imwrite(phase_correlated2, '../results/phase_correlated2.png');
+imwrite(spatial_correlated1,'../results/space_correlation1.jpg','jpg');
+imwrite(spatial_correlated2,'../results/space_correlation2.jpg','jpg');
+imwrite(spatial_cross_correlated1,'../results/spatial_cross_correlated1.jpg', 'jpg');
+imwrite(spatial_cross_correlated2,'../results/spatial_cross_correlated2.jpg', 'jpg');
+imwrite(fourier_correlated1,'../results/fourier_correlated1.jpg', 'jpg');
+imwrite(fourier_correlated2,'../results/fourier_correlated2.jpg', 'jpg');
+imwrite(phase_correlated1, '../results/phase_correlated1.jpg', 'jpg');
+imwrite(phase_correlated2, '../results/phase_correlated2.jpg', 'jpg');
 
 
 % OPTIONAL 1 ------------------------------------------------------------
