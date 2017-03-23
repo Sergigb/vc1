@@ -26,11 +26,11 @@ close all,
 clc,
 
 % Image names
-file_names = {'00149v.jpg', '00153v.jpg', '00194v.jpg', '00458v.jpg',... 
-              '01167v.jpg', '00163v.jpg', '00398v.jpg', '00600v.jpg'};  
+file_names = {'00149v.jpg', '00153v.jpg', '00194v.jpg', '00458v.jpg',...
+              '01167v.jpg', '00163v.jpg', '00398v.jpg', '00600v.jpg'};
 
 % TODO. Load the first of the images to work with:
-im1 = imread(file_names{2});
+im1 = imread(file_names{2});        %we are used the image 00153v.jpg, in some versions of matlab we had problems picking this image (we are using matlab R2015b)
 
 % TODO. Load the second of the images to work with:
 im2 = imread(file_names{8});
@@ -212,18 +212,18 @@ title('normalxcorrelated');
 
 
 % Fourier domain correlations:
-fft_reference1 = fft2(reference1);                          %domain correlation image 1
-fft_red1 = fft_reference1.*conj(fft2(red_cut1));            %domain correlation red
+fft_reference1 = fft2(reference1);                                    %domain correlation image 1
+fft_red1 = fftshift(fft_reference1.*conj(fft2(red_cut1)));            %domain correlation red
 domain_correlation_red1 = ifft2(fft_red1);
 
-fft_blue1 = fft_reference1.*conj(fft2(blue_cut1));          %domain correlation blue
+fft_blue1 = fftshift(fft_reference1.*conj(fft2(blue_cut1)));          %domain correlation blue
 domain_correlation_blue1 = ifft2(fft_blue1);
 
-fft_reference2 = fft2(reference2);                          %domain correlation image 1
-fft_red2 = fft_reference2.*conj(fft2(red_cut2));            %domain correlation red
+fft_reference2 = fft2(reference2);                                    %domain correlation image 1
+fft_red2 = fftshift(fft_reference2.*conj(fft2(red_cut2)));            %domain correlation red
 domain_correlation_red2 = ifft2(fft_red2);
 
-fft_green2 = fft_reference2.*conj(fft2(green_cut2));        %domain correlation green
+fft_green2 = fftshift(fft_reference2.*conj(fft2(green_cut2)));        %domain correlation green
 domain_correlation_green2 = ifft2(fft_green2);
 
 %Coordinates where the correlation is maximum:
@@ -265,17 +265,17 @@ title('Fourier Domain');
 % phase correlation in fourier domain:
 fft_reference1 = fft2(reference1);                          %phase correlation image 1
 cps_red1 = fft_reference1.*conj(fft2(red_cut1));            %phase correlation red channel
-phase_correlation_red1 = ifft2(cps_red1./abs(cps_red1));
+phase_correlation_red1 = ifft2(fftshift(cps_red1./abs(cps_red1)));
 
 cps_blue1 = fft_reference1.*conj(fft2(blue_cut1));          %phase correlation blue channel
-phase_correlation_blue1 = ifft2(cps_blue1./abs(cps_blue1));
+phase_correlation_blue1 = ifft2(fftshift(cps_blue1./abs(cps_blue1)));
 
 fft_reference2 = fft2(reference2);                          %phase correlation image 2
 cps_red2 = fft_reference2.*conj(fft2(red_cut2));            %phase correlation red channel
-phase_correlation_red2 = ifft2(cps_red2./abs(cps_red2));
+phase_correlation_red2 = ifft2(fftshift(cps_red2./abs(cps_red2)));
 
 cps_green2 = fft_reference2.*conj(fft2(green_cut2));        %phase correlation green channel
-phase_correlation_green2 = ifft2(cps_green2./abs(cps_green2));
+phase_correlation_green2 = ifft2(fftshift(cps_green2./abs(cps_green2)));
 
 %Coordinates where the correlation is maximum:
 [value1_red_four, location1_red_four] = max(phase_correlation_red1(:));             %shifts image 1
