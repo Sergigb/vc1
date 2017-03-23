@@ -114,8 +114,8 @@ reference2=double(blue_cut2);
 % TODO. Compute the spatial correlation of the reference channel with other
 % channels for the two images.
 
-Green_Red1 = conv2((flipud(double(red_channel1))),(reference1), 'same');
-Green_Blue1 = conv2((flipud(double(blue_channel1))), (reference1), 'same');
+Green_Red1 = conv2(double((histeq(red_channel1))),flipud(histeq(reference1)), 'full');
+Green_Blue1 = conv2(double((histeq(blue_channel1))), flipud(histeq(reference1)), 'full');
 
 %Blue_Red2 = etc
 %Blue_Green2= etc
@@ -130,32 +130,19 @@ Green_Blue1 = conv2((flipud(double(blue_channel1))), (reference1), 'same');
 [R1_blue,C1_blue] = ind2sub(size(Green_Blue1),location1_blue);
 
 
+Green_Blue1(R1_blue,C1_blue) = 1;
+Green_Red1(R1_red, C1_red) = 1;
+
 [h_temp, w_temp] = size(Green_Red1);
 h_temp = int32(h_temp/4);
 w_temp = int32(w_temp/4);
 
 
-%Green_Red1(h_temp ,w_temp) = 0.6;
-%Green_Blue1(h_temp ,w_temp) = 0.6;
-% 
-% Green_Red1(R1_red,C1_red) = 0.6;
-% Green_Blue1(R1_blue,C1_blue) = 0.6;
-% 
-% figure(14),
-% imshow((Green_Blue1), [])
-% title('blue');
-% figure(15),
-% imshow((Green_Red1), [])
-% title('red');
-
-% mc_red_greem_2 = 
-% mc_red_blue_2 = 
-
 % TODO. Shifting the position in the correlated channel
 % help circshift
 
-red_shifted_1 = circshift(red_channel1, [-1*R1_red-h_temp, -1*C1_red-w_temp]);
-blue_shifted_1 = circshift(blue_channel1, [R1_blue+h_temp, -1*C1_blue+w_temp]);
+red_shifted_1 = circshift(red_channel1, [-R1_red-h_temp, -C1_red-w_temp]);
+blue_shifted_1 = circshift(blue_channel1, [R1_blue+h_temp, -C1_blue+w_temp]);
 
 % TODO. Mix che shifted channels and the reference channel in a single 
 % correlated image.
@@ -345,21 +332,79 @@ imwrite(phase_correlated2, '../results/phase_correlated2.png');
 % OPTIONAL 1 ------------------------------------------------------------
 % Improve the crop
 
+supercell = {red_channel1, green_channel1, blue_channel1, red_channel2, green_channel2, blue_channel2};
+bbxy = zeros(6,2);      %6x2 matrix where we store the (upper left) coordinates of the different bounding boxes (3 channels per image)
+bbwh = zeros(6,2);      %6x2 matrix where we store the width and the height of the different bounding boxes
+
+for i=1:6
+    channel = cell2mat(supercell(i));
+
+    [w,h] = size(channel);
+    filt = zeros(w,h);
+    w2=w;
+    h2=h;
+
+    filt(:,:) = channel(:,:)<15;        %threshold to eliminate the white borders of the images
+    st = regionprops(filt, 'BoundingBox' );
+    thisBB1 = st(1).BoundingBox;        %creates a bounding box around the part of the image we want to crop, thus eliminating the white contours
+    crop_image = channel(int32(thisBB1(2):thisBB1(4)), int32(thisBB1(1):thisBB1(3)));
+
+    [w,h] = size(crop_image);
+    filt=zeros(w,h);
+    filt(:,:) = not(crop_image(:,:)<15);    %threshold to eliminate the black borders of the images
+
+    se = strel('line',9,70);        %removing the black contours of the images is more difficult because they are less uniform, 
+    filt = imerode(filt, se);       %if we only use a threshold, the bounding box cannot fully eliminate the black borders
+    se = strel('line',10,1);        %these morphological operations help to enhance the filter and create the bounding box
+    filt = imerode(filt, se);
+    se = strel('disk',5);
+    filt = imerode(filt, se);
+
+    st = regionprops(filt, 'BoundingBox' );
+    thisBB2 = st(1).BoundingBox;
+    
+    bbxy(i,:) = [thisBB2(1)+thisBB1(1), thisBB2(2)+thisBB1(2)];     %we store the coordinates and the sizes of all bounding boxes 
+    bbwh(i,:) = [thisBB2(3)+(w2-thisBB1(3)), thisBB2(4)+(h2-thisBB1(4))];   %of the different image channels
+end
+
+maxxy1 = int32(max(bbxy(1:3,:)));   %to ensure that the 3 channels of each image have the same size, we use the smallest bounding
+maxxy2 = int32(max(bbxy(4:6,:)));   %boxes we can create with the different parameters??
+minwh1 = int32(min(bbwh(1:3,:)));   %if we use the smallest bounding boxes possible, we will ensure that the cropping effectively
+minwh2 = int32(min(bbwh(4:6,:)));   %eliminates the borders in all the different channels of the image.
+
+figure(666),
+subplot(2,3,1), imshow(red_channel1(maxxy1(1):minwh1(1), maxxy1(2):minwh1(2)));
+subplot(2,3,2), imshow(green_channel1(maxxy1(1):minwh1(1), maxxy1(2):minwh1(2)));
+subplot(2,3,3), imshow(blue_channel1(maxxy1(1):minwh1(1), maxxy1(2):minwh1(2)));
+
+subplot(2,3,4), imshow(red_channel2(maxxy2(1):minwh2(1), maxxy2(2):minwh1(2)));
+subplot(2,3,5), imshow(green_channel2(maxxy2(1):minwh2(1), maxxy2(2):minwh1(2)));
+subplot(2,3,6), imshow(blue_channel2(maxxy2(1):minwh2(1), maxxy2(2):minwh1(2)));
+
+
 % OPTIONAL 2 ------------------------------------------------------------
 % Improve the saving by removing the incomplete pixels or adding neural
 % gray to incomplete pixels.
 
-
 % OPTIONAL 3 ------------------------------------------------------------
 % Sharpening
+image1_ycbcr = rgb2ycbcr(spatial_cross_correlated1);    %conversion from rgb to ycbcr
+image1_ycbcr(:, :, 1) = filter2(fspecial('unsharp'), double(image1_ycbcr(:, :, 1)));    %to sharpen the image, we use a high-pass filter in the luma dimension of the image
+image1_sharp = ycbcr2rgb(image1_ycbcr);
+
+
+image2_ycbcr = rgb2ycbcr(spatial_cross_correlated2);
+image2_ycbcr(:, :, 1) = filter2(fspecial('unsharp'), double(image2_ycbcr(:, :, 1)));
+image2_sharp = ycbcr2rgb(image2_ycbcr);
+
+figure(9),
+subplot(1,2,1), imshow(image1_sharp);
+subplot(1,2,2), imshow(image2_sharp);
+title('Sharpening');
 
 
 % OPTIONAL 4 ------------------------------------------------------------
 % Remove image defects using morphology techniques
-
-
-
-
 
 
 
